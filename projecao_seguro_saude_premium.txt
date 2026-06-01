@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeção Financeira de Saúde - Riber Seguros</title>
+  <style>
+    :root {
+      --bg1:#f5f7fb;
+      --bg2:#e9eefb;
+      --card:#ffffffcc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --accent:#0f172a;
+      --accent-soft:#eef2ff;
+      --good:#059669;
+      --warn:#d97706;
+      --shadow:0 16px 45px rgba(15,23,42,.09);
+      --radius:24px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(15,23,42,.12), transparent 28%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 18px; }
+    .hero {
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(255,255,255,.8);
+      box-shadow: var(--shadow);
+      border-radius: 32px;
+      padding: 24px;
+      display:grid;
+      grid-template-columns: 1.3fr .9fr;
+      gap:24px;
+      backdrop-filter: blur(8px);
+    }
+    .hero-left {
+      display:flex; gap:18px; align-items:center;
+    }
+    .logo { height:72px; width:auto; object-fit:contain; }
+    .eyebrow { font-size:12px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); font-weight:700; }
+    h1 { margin:6px 0 6px; font-size: 38px; line-height:1.05; }
+    .sub { color:var(--muted); font-size:15px; }
+    .hero-right { display:grid; gap:14px; }
+    .spot {
+      border:1px solid var(--line);
+      background:#f8fafc;
+      border-radius: 24px;
+      padding: 18px;
+    }
+    .spot .label, .summary .label { font-size:13px; color:var(--muted); }
+    .spot .value, .summary .value { margin-top:8px; font-size:30px; font-weight:800; }
+    .spot .small { margin-top:8px; font-size:12px; color:var(--good); }
+    .grid4 {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: repeat(4,1fr);
+      gap:14px;
+    }
+    .summary {
+      background:var(--card);
+      box-shadow: var(--shadow);
+      border-radius: 24px;
+      padding: 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .summary .icon {
+      background:var(--accent);
+      color:white;
+      width:42px;height:42px;border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:18px;
+    }
+    .main-grid {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:18px;
+    }
+    .card {
+      background:var(--card);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .card h2 { margin:0 0 14px; font-size:22px; }
+    .params {
+      display:grid;
+      grid-template-columns: repeat(3,1fr);
+      gap:14px;
+    }
+    .field label {
+      display:block; font-size:13px; color:var(--muted); margin-bottom:7px; font-weight:600;
+    }
+    .field input {
+      width:100%; padding:12px 14px; border-radius:18px; border:1px solid #d6dce7; background:white;
+      font-size:15px; color:var(--text);
+    }
+    .actions .buttons, .scenario-buttons {
+      display:flex; flex-wrap:wrap; gap:10px;
+    }
+    button {
+      border:1px solid #d6dce7; background:white; color:var(--text);
+      padding:11px 15px; border-radius:18px; font-weight:700; cursor:pointer;
+      transition:.18s ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(15,23,42,.08); }
+    button.primary { background:var(--accent); color:white; border-color:var(--accent); }
+    button.soft { background:var(--accent-soft); border-color:#c7d2fe; }
+    button.active { background:var(--accent); color:white; border-color:var(--accent); }
+    .chart-card { margin-top:18px; }
+    #chartWrap { height: 360px; }
+    .edit-grid {
+      margin-top:18px;
+      display:grid; grid-template-columns: 1fr 1fr; gap:18px;
+    }
+    .header-row {
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+    }
+    table {
+      width:100%; border-collapse: collapse; min-width: 700px;
+    }
+    th, td {
+      padding:12px 10px; border-bottom:1px solid var(--line); text-align:left; font-size:14px;
+    }
+    th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.03em; }
+    td input {
+      width:100%; padding:10px 12px; border-radius:14px; border:1px solid #d6dce7; background:white;
+    }
+    .table-wrap { overflow:auto; }
+    .remove-btn {
+      width:40px; height:40px; border-radius:14px; padding:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .years { margin-top:18px; display:grid; gap:18px; }
+    .year-card .top {
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding-bottom:12px; border-bottom:1px solid var(--line); margin-bottom:10px;
+    }
+    .pill {
+      background:var(--accent); color:white; padding:8px 12px; border-radius:999px; font-size:13px; font-weight:700;
+    }
+    .highlight { color:var(--warn); font-weight:800; }
+    .hidden-client { display:none !important; }
+    .toolbar {
+      position: sticky; top: 0; z-index: 20; padding: 10px 0 0;
+    }
+    .footer-note {
+      margin-top:18px; background:#0f172a; color:#cbd5e1;
+      border-radius:28px; padding:22px; box-shadow:var(--shadow);
+      display:flex; justify-content:space-between; align-items:center; gap:16px;
+    }
+    .footer-note strong { color:white; }
+    .muted { color:var(--muted); }
+    @media (max-width: 1100px) {
+      .hero, .main-grid, .edit-grid, .grid4 { grid-template-columns:1fr; }
+      h1 { font-size: 30px; }
+      .params { grid-template-columns:1fr; }
+    }
+    @media print {
+      body { background:white; }
+      .toolbar, .edit-grid, .actions-card, .client-hide-print, .scenario-buttons, .footer-note { display:none !important; }
+      .card, .hero, .summary { box-shadow:none; background:white; border:1px solid #ddd; }
+      .container { max-width:none; padding:0; }
+      .year-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar client-hide-print">
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button id="presentationToggle">Modo cliente</button>
+        <button id="pdfBtn" class="primary">PDF</button>
+        <button id="csvBtn">Exportar CSV</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-left">
+        <img class="logo" src="data:image/png;base64,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" alt="Riber Seguros" />
+        <div>
+          <div class="eyebrow">Dashboard premium</div>
+          <h1>Projeção Financeira de Saúde</h1>
+          <div class="sub">Simulação estratégica familiar com visão executiva e comercial.</div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="spot">
+          <div class="label">Total mensal no ano base</div>
+          <div class="value" id="baseTotal">R$ 0,00</div>
+        </div>
+        <div class="spot">
+          <div class="label">Total mensal no último ano</div>
+          <div class="value" id="finalTotal">R$ 0,00</div>
+          <div class="small" id="growthPct">Variação acumulada: 0,00%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid4">
+      <div class="summary">
+        <div>
+          <div class="label">Vidas projetadas</div>
+          <div class="value" id="membersCount">0</div>
+          <div class="muted" style="font-size:12px;">Pessoas incluídas</div>
+        </div>
+        <div class="icon">👥</div>
+      </div>
+      <div class="summary">
+        <div>
+          <div class="label">Horizonte</div>
+          <div class="value" id="horizonText">0 anos</div>
+          <div class="muted" style="font-size:12px;" id="horizonSub"></div>
+        </div>
+        <div class="icon">🗓</div>
+      </div>
+      <div class="summary">
+        <div>
+          <div class="label">Reajuste anual</div>
+          <div class="value" id="annualText">0,00%</div>
+          <div class="muted" style="font-size:12px;">Definido por você</div>
+        </div>
+        <div class="icon">🛡</div>
+      </div>
+      <div class="summary">
+        <div>
+          <div class="label">Crescimento total</div>
+          <div class="value" id="growthAbs">R$ 0,00</div>
+          <div class="muted" style="font-size:12px;">Do primeiro ao último ano</div>
+        </div>
+        <div class="icon">📈</div>
+      </div>
+    </section>
+
+    <section class="main-grid client-hide-print">
+      <div class="card">
+        <h2>Parâmetros da simulação</h2>
+        <div class="params">
+          <div class="field">
+            <label for="baseYear">Ano base</label>
+            <input id="baseYear" type="number" />
+          </div>
+          <div class="field">
+            <label for="projectionYears">Qtd. de anos</label>
+            <input id="projectionYears" type="number" min="1" max="30" />
+          </div>
+          <div class="field">
+            <label for="annualAdjustment">Reajuste anual (%)</label>
+            <input id="annualAdjustment" type="number" step="0.01" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card actions-card">
+        <h2>Ações e cenários</h2>
+        <div class="scenario-buttons" style="margin-bottom:14px;">
+          <button data-scenario="12">Conservador (12%)</button>
+          <button data-scenario="18" class="active">Realista (18%)</button>
+          <button data-scenario="25">Agressivo (25%)</button>
+        </div>
+        <div class="actions">
+          <div class="buttons">
+            <button id="addMemberBtn" class="soft">Adicionar pessoa</button>
+            <button id="addBandBtn">Adicionar faixa</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card chart-card">
+      <h2>Evolução do custo mensal total</h2>
+      <div id="chartWrap">
+        <canvas id="chartCanvas"></canvas>
+      </div>
+    </section>
+
+    <section class="edit-grid" id="editSection">
+      <div class="card">
+        <div class="header-row">
+          <h2>Pessoas seguradas</h2>
+          <button id="addMemberBtn2" class="soft">Adicionar pessoa</button>
+        </div>
+        <div class="table-wrap">
+          <table id="membersTable">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Nascimento</th>
+                <th>Custo atual</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="header-row">
+          <h2>Faixas etárias</h2>
+          <button id="addBandBtn2">Adicionar faixa</button>
+        </div>
+        <div class="table-wrap">
+          <table id="bandsTable">
+            <thead>
+              <tr>
+                <th>Idade mínima</th>
+                <th>Percentual (%)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="years" id="yearsContainer"></section>
+
+    <section class="footer-note client-hide-print">
+      <div>
+        <strong>Pronto para apresentação premium.</strong><br />
+        A base já está funcional para cálculo, edição, cenário, PDF e publicação no GitHub Pages.
+      </div>
+      <button id="pdfBtn2" class="primary">Gerar PDF</button>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      baseYear: new Date().getFullYear(),
+      projectionYears: 10,
+      annualAdjustment: 18,
+      presentationMode: false,
+      members: [
+        { id: crypto.randomUUID(), name: "Ricardo", birthDate: "1986-05-08", currentCost: 2200 },
+        { id: crypto.randomUUID(), name: "Giseli", birthDate: "1987-11-28", currentCost: 1900 },
+        { id: crypto.randomUUID(), name: "Melina", birthDate: "2024-11-08", currentCost: 700 },
+        { id: crypto.randomUUID(), name: "Bernardo", birthDate: "2025-12-08", currentCost: 400 },
+      ],
+      bands: [
+        { minAge: 0, percent: 0 },
+        { minAge: 19, percent: 18 },
+        { minAge: 24, percent: 21 },
+        { minAge: 29, percent: 20 },
+        { minAge: 34, percent: 14 },
+        { minAge: 39, percent: 3 },
+        { minAge: 44, percent: 21.75 },
+        { minAge: 49, percent: 17.62 },
+        { minAge: 54, percent: 19 },
+        { minAge: 59, percent: 75 },
+      ]
+    };
+
+    const el = (id) => document.getElementById(id);
+
+    function money(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+    }
+
+    function pct(value) {
+      return Number(value || 0).toFixed(2).replace('.', ',') + '%';
+    }
+
+    function calculateCurrentAgeIgnoringBirthday(birthDate) {
+      if (!birthDate) return 0;
+      const today = new Date();
+      const birth = new Date(birthDate + 'T00:00:00');
+      if (Number.isNaN(birth.getTime())) return 0;
+      return today.getFullYear() - birth.getFullYear();
+    }
+
+    function getSortedBands() {
+      return [...state.bands].sort((a,b) => Number(a.minAge) - Number(b.minAge));
+    }
+
+    function getBandMinAge(age) {
+      const bands = getSortedBands();
+      let result = bands[0]?.minAge ?? 0;
+      for (const band of bands) {
+        if (age >= Number(band.minAge)) result = Number(band.minAge);
+        else break;
+      }
+      return Number(result);
+    }
+
+    function getBandPercent(age) {
+      const bands = getSortedBands();
+      let result = bands[0]?.percent ?? 0;
+      for (const band of bands) {
+        if (age >= Number(band.minAge)) result = Number(band.percent);
+        else break;
+      }
+      return Number(result);
+    }
+
+    function computeRowsByYear() {
+      return Array.from({ length: Number(state.projectionYears) }, (_, yearIndex) => {
+        const year = Number(state.baseYear) + yearIndex;
+        const rows = state.members.map(member => {
+          const baseAge = calculateCurrentAgeIgnoringBirthday(member.birthDate);
+          const age = baseAge + yearIndex;
+          const prevAge = yearIndex === 0 ? age : baseAge + yearIndex - 1;
+          const annualPct = yearIndex === 0 ? 0 : Number(state.annualAdjustment);
+          const currentBand = getBandMinAge(age);
+          const prevBand = getBandMinAge(prevAge);
+          const bandAdjustment = yearIndex === 0 ? 0 : (currentBand === prevBand ? 0 : getBandPercent(age));
+
+          let finalCost = Number(member.currentCost || 0);
+          if (yearIndex > 0) {
+            for (let i = 1; i <= yearIndex; i++) {
+              const loopAge = baseAge + i;
+              const loopPrevAge = baseAge + i - 1;
+              const loopBand = getBandMinAge(loopAge);
+              const loopPrevBand = getBandMinAge(loopPrevAge);
+              const loopBandAdj = loopBand === loopPrevBand ? 0 : getBandPercent(loopAge);
+              finalCost = finalCost * (1 + Number(state.annualAdjustment)/100 + loopBandAdj/100);
+            }
+          }
+
+          let previousCost = Number(member.currentCost || 0);
+          if (yearIndex > 0) {
+            previousCost = Number(member.currentCost || 0);
+            for (let i = 1; i < yearIndex; i++) {
+              const loopAge = baseAge + i;
+              const loopPrevAge = baseAge + i - 1;
+              const loopBand = getBandMinAge(loopAge);
+              const loopPrevBand = getBandMinAge(loopPrevAge);
+              const loopBandAdj = loopBand === loopPrevBand ? 0 : getBandPercent(loopAge);
+              previousCost = previousCost * (1 + Number(state.annualAdjustment)/100 + loopBandAdj/100);
+            }
+          }
+
+          return {
+            ...member,
+            age,
+            year,
+            baseCost: previousCost,
+            annualAdjustment: annualPct,
+            bandAdjustment,
+            finalCost,
+          };
+        });
+        return {
+          year,
+          rows,
+          total: rows.reduce((sum, row) => sum + Number(row.finalCost || 0), 0),
+        };
+      });
+    }
+
+    function renderMembersTable() {
+      const tbody = el('membersTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      state.members.forEach((member) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input value="${member.name || ''}" placeholder="Nome" /></td>
+          <td><input type="date" value="${member.birthDate || ''}" /></td>
+          <td><input type="number" step="0.01" value="${member.currentCost ?? 0}" placeholder="0,00" /></td>
+          <td><button class="remove-btn">✕</button></td>
+        `;
+        const inputs = tr.querySelectorAll('input');
+        inputs[0].addEventListener('input', (e) => { member.name = e.target.value; render(); });
+        inputs[1].addEventListener('input', (e) => { member.birthDate = e.target.value; render(); });
+        inputs[2].addEventListener('input', (e) => { member.currentCost = Number(e.target.value || 0); render(); });
+        tr.querySelector('button').addEventListener('click', () => {
+          state.members = state.members.filter(m => m.id !== member.id);
+          render();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBandsTable() {
+      const tbody = el('bandsTable').querySelector('tbody');
+      tbody.innerHTML = '';
+      state.bands.forEach((band, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="number" value="${band.minAge}" /></td>
+          <td><input type="number" step="0.01" value="${band.percent}" /></td>
+          <td><button class="remove-btn">✕</button></td>
+        `;
+        const inputs = tr.querySelectorAll('input');
+        inputs[0].addEventListener('input', (e) => { band.minAge = Number(e.target.value || 0); render(); });
+        inputs[1].addEventListener('input', (e) => { band.percent = Number(e.target.value || 0); render(); });
+        tr.querySelector('button').addEventListener('click', () => {
+          state.bands.splice(idx, 1);
+          render();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSummaries(rowsByYear) {
+      const baseTotal = rowsByYear[0]?.total || 0;
+      const finalTotal = rowsByYear[rowsByYear.length - 1]?.total || 0;
+      const absGrowth = finalTotal - baseTotal;
+      const pctGrowth = baseTotal > 0 ? (absGrowth / baseTotal) * 100 : 0;
+
+      el('baseTotal').textContent = money(baseTotal);
+      el('finalTotal').textContent = money(finalTotal);
+      el('growthPct').textContent = 'Variação acumulada: ' + pct(pctGrowth);
+      el('membersCount').textContent = String(state.members.length);
+      el('horizonText').textContent = state.projectionYears + ' anos';
+      el('horizonSub').textContent = 'De ' + state.baseYear + ' até ' + (Number(state.baseYear) + Number(state.projectionYears) - 1);
+      el('annualText').textContent = pct(state.annualAdjustment);
+      el('growthAbs').textContent = money(absGrowth);
+    }
+
+    function renderYears(rowsByYear) {
+      const wrap = el('yearsContainer');
+      wrap.innerHTML = '';
+      rowsByYear.forEach(block => {
+        const card = document.createElement('div');
+        card.className = 'card year-card';
+        card.innerHTML = `
+          <div class="top">
+            <h2 style="margin:0;">Ano ${block.year}</h2>
+            <div class="pill">Total mensal: ${money(block.total)}</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Nascimento</th>
+                  <th>Idade</th>
+                  <th>Custo base</th>
+                  <th>Reajuste anual</th>
+                  <th>Reajuste faixa</th>
+                  <th>Custo final</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${block.rows.map(row => `
+                  <tr>
+                    <td><strong>${row.name || ''}</strong></td>
+                    <td>${row.birthDate ? new Date(row.birthDate + 'T00:00:00').toLocaleDateString('pt-BR') : ''}</td>
+                    <td>${row.age}</td>
+                    <td>${money(row.baseCost)}</td>
+                    <td>${pct(row.annualAdjustment)}</td>
+                    <td><span class="${row.bandAdjustment > 0 ? 'highlight' : 'muted'}">${pct(row.bandAdjustment)}</span></td>
+                    <td><strong>${money(row.finalCost)}</strong></td>
+                  </tr>
+                `).join('')}
+                <tr>
+                  <td colspan="6" style="text-align:right;"><strong>Total mensal</strong></td>
+                  <td><strong>${money(block.total)}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    function drawChart(rowsByYear) {
+      const canvas = el('chartCanvas');
+      const parent = el('chartWrap');
+      const width = parent.clientWidth;
+      const height = parent.clientHeight;
+      canvas.width = width * devicePixelRatio;
+      canvas.height = height * devicePixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      ctx.clearRect(0,0,width,height);
+
+      const padding = { top: 18, right: 18, bottom: 36, left: 58 };
+      const chartW = width - padding.left - padding.right;
+      const chartH = height - padding.top - padding.bottom;
+      const data = rowsByYear.map(x => Number(x.total || 0));
+      if (!data.length) return;
+
+      const max = Math.max(...data) * 1.08 || 1;
+      const min = 0;
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.fillStyle = '#64748b';
+      ctx.lineWidth = 1;
+      ctx.font = '12px Inter, sans-serif';
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.setLineDash([3,4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const value = max - (max / 4) * i;
+        ctx.fillText(Math.round(value).toString(), 8, y + 4);
+      }
+
+      const pts = rowsByYear.map((d, i) => {
+        const x = padding.left + (chartW * (rowsByYear.length === 1 ? 0.5 : i / (rowsByYear.length - 1)));
+        const y = padding.top + chartH - ((Number(d.total) - min) / (max - min)) * chartH;
+        return { x, y, year: d.year, total: d.total };
+      });
+
+      const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+      gradient.addColorStop(0, 'rgba(15,23,42,0.20)');
+      gradient.addColorStop(1, 'rgba(15,23,42,0.02)');
+
+      ctx.beginPath();
+      pts.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.lineTo(pts[pts.length - 1].x, padding.top + chartH);
+      ctx.lineTo(pts[0].x, padding.top + chartH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      pts.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      pts.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = '#475569';
+      ctx.textAlign = 'center';
+      pts.forEach((p) => {
+        ctx.fillText(String(p.year), p.x, height - 10);
+      });
+      ctx.textAlign = 'left';
+    }
+
+    function exportCsv(rowsByYear) {
+      const headers = ['Ano','Nome','Nascimento','Idade','Custo Base','Reajuste Anual (%)','Reajuste Faixa (%)','Custo Final'];
+      const lines = [headers.join(';')];
+      rowsByYear.forEach(block => {
+        block.rows.forEach(row => {
+          lines.push([
+            block.year,
+            row.name,
+            row.birthDate,
+            row.age,
+            Number(row.baseCost).toFixed(2).replace('.', ','),
+            Number(row.annualAdjustment).toFixed(2).replace('.', ','),
+            Number(row.bandAdjustment).toFixed(2).replace('.', ','),
+            Number(row.finalCost).toFixed(2).replace('.', ',')
+          ].join(';'));
+        });
+      });
+      const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'projecao-seguro-saude-premium.csv';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function render() {
+      el('baseYear').value = state.baseYear;
+      el('projectionYears').value = state.projectionYears;
+      el('annualAdjustment').value = state.annualAdjustment;
+
+      document.querySelectorAll('[data-scenario]').forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.scenario) === Number(state.annualAdjustment));
+      });
+
+      document.body.classList.toggle('presentation-mode', state.presentationMode);
+      el('presentationToggle').textContent = state.presentationMode ? 'Modo edição' : 'Modo cliente';
+      el('editSection').classList.toggle('hidden-client', state.presentationMode);
+      document.querySelector('.main-grid').classList.toggle('hidden-client', state.presentationMode);
+
+      renderMembersTable();
+      renderBandsTable();
+
+      const rowsByYear = computeRowsByYear();
+      renderSummaries(rowsByYear);
+      renderYears(rowsByYear);
+      drawChart(rowsByYear);
+
+      el('csvBtn').onclick = () => exportCsv(rowsByYear);
+      el('pdfBtn').onclick = () => window.print();
+      el('pdfBtn2').onclick = () => window.print();
+    }
+
+    el('baseYear').addEventListener('input', (e) => { state.baseYear = Number(e.target.value || new Date().getFullYear()); render(); });
+    el('projectionYears').addEventListener('input', (e) => { state.projectionYears = Math.max(1, Number(e.target.value || 1)); render(); });
+    el('annualAdjustment').addEventListener('input', (e) => { state.annualAdjustment = Number(e.target.value || 0); render(); });
+    document.querySelectorAll('[data-scenario]').forEach(btn => btn.addEventListener('click', () => {
+      state.annualAdjustment = Number(btn.dataset.scenario);
+      render();
+    }));
+    el('presentationToggle').addEventListener('click', () => { state.presentationMode = !state.presentationMode; render(); });
+    el('addMemberBtn').addEventListener('click', () => {
+      state.members.push({ id: crypto.randomUUID(), name: '', birthDate: '', currentCost: 0 });
+      render();
+    });
+    el('addMemberBtn2').addEventListener('click', () => {
+      state.members.push({ id: crypto.randomUUID(), name: '', birthDate: '', currentCost: 0 });
+      render();
+    });
+    el('addBandBtn').addEventListener('click', () => {
+      state.bands.push({ minAge: 0, percent: 0 });
+      render();
+    });
+    el('addBandBtn2').addEventListener('click', () => {
+      state.bands.push({ minAge: 0, percent: 0 });
+      render();
+    });
+    window.addEventListener('resize', render);
+
+    render();
+  </script>
+</body>
+</html>
